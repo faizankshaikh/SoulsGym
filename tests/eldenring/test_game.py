@@ -7,6 +7,7 @@ import numpy as np
 from soulsgym.core.utils import get_pid
 from soulsgym.games.eldenring import EldenRing
 
+from tests.eldenring.utils import simulated_game
 from tests.utils import type_assert, greater_than_assert, geq_assert, shape_assert, len_assert
 
 
@@ -54,10 +55,7 @@ game_attributes = {"player_hp": {"type": int, ">": 0},
                    }
 
 
-@pytest.mark.skipif(game_not_open(), reason="Elden Ring is not running.")
-@pytest.mark.parametrize("attr_name, attr_info", game_attributes.items())
-def test_game_attributes(game, attr_name, attr_info):
-    attr = getattr(game, attr_name)
+def check_attribute(attr_name: str, attr, attr_info: dict):
     for attr_info_key, attr_info_value in attr_info.items():
         match attr_info_key:
             case "type":
@@ -72,3 +70,19 @@ def test_game_attributes(game, attr_name, attr_info):
                 len_assert(attr_name, attr, attr_info_value)
             case _:
                 raise ValueError(f"Unknown attribute check category: {attr_info_key}")
+
+
+# Evaluated lazily, so collecting the tests does not attach to a running game
+@pytest.mark.skipif("game_not_open()", reason="Elden Ring is not running.")
+@pytest.mark.parametrize("attr_name, attr_info", game_attributes.items())
+def test_game_attributes(game, attr_name, attr_info):
+    check_attribute(attr_name, getattr(game, attr_name), attr_info)
+
+
+# The game speed and the image need the speedhack and the window of a running game
+simulated_attributes = {k: v for k, v in game_attributes.items() if k not in ("game_speed", "img")}
+
+
+@pytest.mark.parametrize("attr_name, attr_info", simulated_attributes.items())
+def test_game_attributes_of_a_simulated_game(attr_name, attr_info):
+    check_attribute(attr_name, getattr(simulated_game(), attr_name), attr_info)
