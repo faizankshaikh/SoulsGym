@@ -5,6 +5,7 @@
 | Path | Contents |
 | --- | --- |
 | `analytics/margit_observer_harness.py` | Read-only observation and calibration harness for live Margit fights |
+| `analytics/margit_eda.ipynb` | Exploratory analysis of one observer run: HP and stamina timelines, positioning, animation distribution and events |
 | `dev-tools/` | Development scripts: a mutation-parity harness (`mut_harness.py`), two M1 memory probes and a random-agent smoke runner (`random_agent.py`, called `test_random_agent.py` in the notes) |
 | `notes/` | Margit rework plans, phase results, workflow and the PR readiness plan. They were moved here from `docs/`, so paths inside them are historical. |
 | `.agents/AGENTS.md` | Workflow rules for coding agents |
@@ -20,6 +21,8 @@ python -m analytics.margit_observer_harness capture-calibration [--capture-key K
 ```
 
 `observe` writes a CSV and a JSON file per run to `logs/observer/`. The JSON holds every recorded field; the CSV is a subset. `capture-calibration` writes to `logs/calibration/`.
+
+The notebook reads the newest `logs/observer/*.json` by default. To analyse a particular run, set `ARTIFACT_PATH` in its first code cell. It needs `pandas`, `matplotlib` and `seaborn`.
 
 ## Logs
 
