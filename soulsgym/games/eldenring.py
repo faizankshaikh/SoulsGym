@@ -246,6 +246,59 @@ class EldenRing(Game):
             self.mem.write_int(address + offset, stat)
 
     @property
+    def margit_hp(self) -> int:
+        """Margit's HP."""
+        return self.mem.read_record(self.data.addresses["MargitHP"])
+
+    @margit_hp.setter
+    def margit_hp(self, hp: int):
+        assert 0 <= hp, "Boss HP has to be zero or positive"
+        self.mem.write_record(self.data.addresses["MargitHP"], hp)
+
+    @property
+    def margit_max_hp(self) -> int:
+        """Margit's maximum HP."""
+        return self.mem.read_record(self.data.addresses["MargitMaxHP"])
+
+    @margit_max_hp.setter
+    def margit_max_hp(self, _: int):
+        raise RuntimeError("Boss maximum HP can't be changed directly")
+
+    def reset_boss_hp(self, boss_id: str):
+        """Reset the current boss hit points.
+
+        Args:
+            boss_id: The boss ID.
+        """
+        setattr(self, boss_id + "_hp", getattr(self, boss_id + "_max_hp"))
+
+    @property
+    def margit_pose(self) -> np.ndarray:
+        """Margit's current pose.
+
+        The setter only writes the position. The rotation is kept.
+        """
+        x, z, y, a = struct.unpack("ffff", self.mem.read_record(self.data.addresses["MargitXYZA"]))
+        return np.array([x, y, z, a])
+
+    @margit_pose.setter
+    def margit_pose(self, coordinates: list[float]):
+        address = self.mem.resolve_record(self.data.addresses["MargitXYZA"])
+        # Swap y and z order because the game's coordinates are stored as xzy
+        xzy = struct.pack("fff", coordinates[0], coordinates[2], coordinates[1])
+        self.mem.write_bytes(address, xzy)
+
+    @property
+    def margit_animation_time(self) -> float:
+        """Margit's current animation time."""
+        return self.mem.read_record(self.data.addresses["MargitAnimationTime"])
+
+    @property
+    def margit_animation_max_time(self) -> float:
+        """Margit's maximum animation time for the current animation."""
+        return self.mem.read_record(self.data.addresses["MargitAnimationMaxTime"])
+
+    @property
     def camera_pose(self) -> np.ndarray:
         """Read the camera's current position and rotation.
 

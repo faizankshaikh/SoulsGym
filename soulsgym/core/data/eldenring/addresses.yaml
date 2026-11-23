@@ -128,4 +128,25 @@ addresses:
     offsets: [0x2831]
     type: bytes
     length: 1
+  MargitHP:
+    base: WorldChrMan
+    offsets: [0x500, 0x180, 0x190, 0x0, 0x138]
+    type: int
+  MargitMaxHP:
+    base: WorldChrMan
+    offsets: [0x500, 0x180, 0x190, 0x0, 0x13C]
+    type: int
+  MargitAnimationTime:
+    base: WorldChrMan
+    offsets: [0x500, 0x180, 0x190, 0x18, 0x24]
+    type: float
+  MargitAnimationMaxTime:
+    base: WorldChrMan
+    offsets: [0x500, 0x180, 0x190, 0x18, 0x28]
+    type: float
+  MargitXYZA:  # Actually XZYA
+    base: WorldChrMan
+    offsets: [0x500, 0x180, 0x190, 0x68, 0x70]
+    type: bytes
+    length: 16
 bases:

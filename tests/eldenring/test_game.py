@@ -42,9 +42,12 @@ game_attributes = {"player_hp": {"type": int, ">": 0},
                    "allow_player_death": {"type": bool},
                    "player_stats": {"type": tuple, "len": 9},
                    # "margit_flags": {"type": bool},
-                   # "margit_hp": {"type": int, ">": 0},
-                   # "margit_pose": {"type": np.ndarray, "shape": (4, )},
+                   "margit_hp": {"type": int, ">": 0},
+                   "margit_max_hp": {"type": int, ">": 0},
+                   "margit_pose": {"type": np.ndarray, "shape": (4, )},
                    # "margit_animation": {"type": str},
+                   "margit_animation_time": {"type": float, ">=": 0},
+                   "margit_animation_max_time": {"type": float, ">=": 0},
                    # "margit_attacks": {"type": bool},
                    "camera_pose": {"type": np.ndarray, "shape": (6, )},
                    "last_bonfire": {"type": str},
@@ -97,6 +100,8 @@ SETTERS = {
     "player_pose": [1.0, 2.0, 3.0, 0.5],
     "allow_player_death": False,
     "player_stats": [1] * 9,
+    "margit_hp": 10,
+    "margit_pose": [1.0, 2.0, 3.0, 0.5],
     "last_bonfire": "Stormhill - Castleward Tunnel",
     "gravity": False,
     "time": 5,
@@ -132,3 +137,11 @@ def test_img_resolution_is_the_image_resolution_of_the_game_window():
     game._game_window = window
 
     assert game.img_resolution == (90, 160)
+
+
+def test_reset_boss_hp_sets_the_boss_hp_to_the_maximum():
+    game = simulated_game(MargitMaxHP=4174)
+
+    game.reset_boss_hp("margit")
+
+    game.mem.write_record.assert_called_once_with(game.data.addresses["MargitHP"], 4174)
