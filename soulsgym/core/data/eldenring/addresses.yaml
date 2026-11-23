@@ -136,6 +136,10 @@ addresses:
     base: WorldChrMan
     offsets: [0x500, 0x180, 0x190, 0x0, 0x13C]
     type: int
+  MargitAnimation:
+    base: WorldChrMan
+    offsets: [0x500, 0x180, 0x190, 0x18, 0x20]
+    type: int
   MargitAnimationTime:
     base: WorldChrMan
     offsets: [0x500, 0x180, 0x190, 0x18, 0x24]

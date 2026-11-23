@@ -4,12 +4,38 @@ player:
   critical:
 
 boss:
-  dummy:
+  margit:
+    # Elden Ring reports animation IDs instead of names, so each entry maps a name to its ID. Only the
+    # animations of phase 1 are listed.
     attacks:
-      - Dummy
+      Attack3000: 2003000
+      Attack3001: 2003001
+      Attack3003: 2003003
+      Attack3006: 2003006
+      Attack3009: 2003009
+      Attack3011: 2003011
+      Attack3012: 2003012
+      Attack3014: 2003014
+      Attack3015: 2003015
+      Attack3017: 2003017
+      Attack3021: 2003021
+      Attack3024: 2003024
+      Attack3025: 2003025
+      Attack3026: 2003026
+      Attack3029: 2003029
+      Ranged8700: 2008700
     movement:
-      - Dummy
+      Idle: 2000020
+      Move2000: 2002000
+      Move2002: 2002002
+      Move2003: 2002003
     misc:
-      - Dummy
-    unused:
-      - Dummy
+      React5003: 2005003
+      Special6002: 2006002
+      Special6003: 2006003
+      Special9000: 2009000
+      Special9500: 2009500
+      Taunt11060: 2011060
+      Hit41000: 41000
+      Hit41002: 41002
+    unused: []

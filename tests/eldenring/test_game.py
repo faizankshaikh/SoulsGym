@@ -45,7 +45,7 @@ game_attributes = {"player_hp": {"type": int, ">": 0},
                    "margit_hp": {"type": int, ">": 0},
                    "margit_max_hp": {"type": int, ">": 0},
                    "margit_pose": {"type": np.ndarray, "shape": (4, )},
-                   # "margit_animation": {"type": str},
+                   "margit_animation": {"type": str},
                    "margit_animation_time": {"type": float, ">=": 0},
                    "margit_animation_max_time": {"type": float, ">=": 0},
                    # "margit_attacks": {"type": bool},
@@ -145,3 +145,8 @@ def test_reset_boss_hp_sets_the_boss_hp_to_the_maximum():
     game.reset_boss_hp("margit")
 
     game.mem.write_record.assert_called_once_with(game.data.addresses["MargitHP"], 4174)
+
+
+@pytest.mark.parametrize("animation_id, name", [(2003000, "Attack3000"), (1234, "Unknown_1234")])
+def test_margit_animation_translates_the_animation_id_to_its_name(animation_id, name):
+    assert simulated_game(MargitAnimation=animation_id).margit_animation == name

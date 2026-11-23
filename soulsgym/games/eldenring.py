@@ -3,6 +3,7 @@
 import logging
 import struct
 import time
+from functools import cached_property
 from typing import Any
 
 import numpy as np
@@ -289,6 +290,23 @@ class EldenRing(Game):
         self.mem.write_bytes(address, xzy)
 
     @property
+    def margit_animation(self) -> str:
+        """Margit's current animation name.
+
+        Elden Ring reports animation IDs. The static data maps the IDs of Margit's animations to
+        names. IDs that are missing in the static data are reported as ``Unknown_<ID>``.
+
+        Returns:
+            The name of Margit's current animation.
+        """
+        animation_id = self.mem.read_record(self.data.addresses["MargitAnimation"])
+        return self._boss_animation_names["margit"].get(animation_id, f"Unknown_{animation_id}")
+
+    @margit_animation.setter
+    def margit_animation(self, _: str):
+        raise NotImplementedError("Boss animation can't be set!")
+
+    @property
     def margit_animation_time(self) -> float:
         """Margit's current animation time."""
         return self.mem.read_record(self.data.addresses["MargitAnimationTime"])
@@ -525,3 +543,15 @@ class EldenRing(Game):
             raise ValueError("Attempting to set a negative game speed")
         self._speed_hack_connector.update_game_speed(value)
         self._game_speed = value
+
+    @cached_property
+    def _boss_animation_names(self) -> dict[str, dict[int, str]]:
+        """The animation names by animation ID for each boss."""
+        return {
+            boss: {
+                animation_id: name
+                for section in ("attacks", "movement", "misc")
+                for name, animation_id in animations[section].items()
+            }
+            for boss, animations in self.data.boss_animations.items()
+        }
