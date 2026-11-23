@@ -54,9 +54,9 @@ class EldenRing(Game):
             image returned by `:meth:.EldenRing.img`.
 
         Returns:
-            The game resolution.
+            The game image resolution.
         """
-        return self._game_window.resolution
+        return self._game_window.img_resolution
 
     @img_resolution.setter
     def img_resolution(self, resolution: tuple[int, int]):
@@ -189,12 +189,11 @@ class EldenRing(Game):
         x, z, y = struct.unpack("fff", self.mem.read_record(self.data.addresses["PlayerLocalXYZ"]))
         new_global_pos = struct.pack("fff", x + delta[0], z + delta[2], y + delta[1])
         self.mem.write_record(self.data.addresses["PlayerLocalXYZ"], new_global_pos)
-        # TODO: Rotation is currently not working
-        # address = self.mem.resolve_record(self.data.addresses["PlayerLocalQ"])
-        # See https://www.euclideanspace.com/maths/geometry/rotations/conversions/index.htm
-        # qw, qx, qz, qy = np.cos(coordinates[3] / 2), 0, np.sin(coordinates[3] / 2), 0
-        # Order in the memory structure is qw qx qz qy
-        # self.mem.write_bytes(address, struct.pack('ffff', qw, qx, qz, qy))
+        # The record holds the orientation and the interpolated orientation as quaternions around
+        # the vertical axis. The game rotates the player back unless we overwrite both
+        a = coordinates[3]
+        rotation = struct.pack("ffff", 0.0, np.sin(a / 2), 0.0, np.cos(a / 2))
+        self.mem.write_record(self.data.addresses["PlayerLocalQ"], rotation * 2)
         self.allow_player_death = allow_player_death
 
     @property
@@ -350,7 +349,7 @@ class EldenRing(Game):
     @gravity.setter
     def gravity(self, flag: bool):
         address = self.mem.resolve_record(self.data.addresses["PlayerGravity"])
-        self.mem.write_bit(address, index=0, val=0 if flag else 1)
+        self.mem.write_bit(address, index=0, value=0 if flag else 1)
 
     @property
     def allow_weapon_durability_dmg(self) -> bool:

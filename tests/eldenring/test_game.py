@@ -1,9 +1,11 @@
 from functools import cache
+import struct
 import warnings
 
 import pytest
 import numpy as np
 
+from soulsgym.core.game_window import GameWindow
 from soulsgym.core.utils import get_pid
 from soulsgym.games.eldenring import EldenRing
 
@@ -86,3 +88,47 @@ simulated_attributes = {k: v for k, v in game_attributes.items() if k not in ("g
 @pytest.mark.parametrize("attr_name, attr_info", simulated_attributes.items())
 def test_game_attributes_of_a_simulated_game(attr_name, attr_info):
     check_attribute(attr_name, getattr(simulated_game(), attr_name), attr_info)
+
+
+SETTERS = {
+    "player_hp": 10,
+    "player_sp": 10,
+    "player_mp": 10,
+    "player_pose": [1.0, 2.0, 3.0, 0.5],
+    "allow_player_death": False,
+    "player_stats": [1] * 9,
+    "last_bonfire": "Stormhill - Castleward Tunnel",
+    "gravity": False,
+    "time": 5,
+}
+
+
+@pytest.mark.parametrize("name, value", SETTERS.items())
+def test_setters_call_the_game_memory_with_valid_arguments(name, value):
+    game = simulated_game()
+
+    setattr(game, name, value)
+
+    assert any(call[0].startswith("write_") for call in game.mem.method_calls)
+
+
+def test_player_pose_setter_rotates_the_player_to_the_target_angle():
+    # Elden Ring interactions like entering fog gates require the player to face the object
+    game = simulated_game()
+
+    game.player_pose = [1.0, 2.0, 3.0, 1.48]
+
+    record = game.data.addresses["PlayerLocalQ"]
+    (rotation,) = [c.args[1] for c in game.mem.write_record.call_args_list if c.args[0] is record]
+    for x, y, z, w in np.reshape(struct.unpack("8f", rotation), (2, 4)):
+        assert (x, z) == (0, 0)
+        assert 2 * np.arctan2(y, w) == pytest.approx(1.48)
+
+
+def test_img_resolution_is_the_image_resolution_of_the_game_window():
+    window = object.__new__(GameWindow)  # Skips the screen capture setup
+    window.img_height, window.img_width = 90, 160
+    game = object.__new__(EldenRing)
+    game._game_window = window
+
+    assert game.img_resolution == (90, 160)

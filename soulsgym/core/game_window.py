@@ -4,7 +4,6 @@
 """
 
 import time
-from itertools import groupby
 from typing import Callable
 
 import cv2
@@ -150,20 +149,13 @@ class GameWindow:
         """
         img = self.raw_img
         desired_resolution = self.game_resolution[self.game_id][::-1]
-        # Detect all rows and columns in the image that are completely black
+        # Find all rows and columns in the image that are not completely black
         black_pixels = np.all(img == 0, axis=2)
-        black_rows, black_columns = (
-            np.all(black_pixels == 1, axis=0),
-            np.all(black_pixels == 1, axis=1),
-        )
-        # Generate a list of the lengths of the black pixel rows and columns
-        img_column_paddings = [len(list(v)) for k, v in groupby(black_columns) if k == 1]
-        img_row_paddings = [len(list(v)) for k, v in groupby(black_rows) if k == 1]
+        rows = np.flatnonzero(~np.all(black_pixels, axis=1))
+        columns = np.flatnonzero(~np.all(black_pixels, axis=0))
         # The initial values for the crop remove the black padding around the borders of the image
-        top_crop = 0 if not black_rows[0] else img_column_paddings[0]
-        bottom_crop = img.shape[0] if not black_rows[-1] else img.shape[0] - img_column_paddings[-1]
-        left_crop = 0 if not black_columns[0] else img_row_paddings[0]
-        right_crop = img.shape[1] if not black_columns[-1] else img.shape[1] - img_row_paddings[-1]
+        top_crop, bottom_crop = rows[0], rows[-1] + 1
+        left_crop, right_crop = columns[0], columns[-1] + 1
         # Check if the image resolution can still be cropped to the desired resolution and
         res_diff = np.array([bottom_crop - top_crop, right_crop - left_crop]) - desired_resolution
         if np.any(res_diff < 0):
